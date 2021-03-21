@@ -49,10 +49,10 @@ class FluidGrid {
   // compute the net movement of each fluid grid cell 
   // in this case, we only consider each grid cell exchange their density and velocities
   // with its four neighbor cells (i-1, j), (i+1, j), (i, j-1), (i, j+1)
-  diffuse(b, x, prev_x) {
+  diffuse(b, x, prev_x, diff) {
     var self = this;
     // amount of diffusion change at the current snapshot 
-    var amount = self.TIME_SPACING * self.DIFFUSION * N * N;
+    var amount = self.TIME_SPACING * diff * N * N;
     // iteraction of diffusion exchanges 
     var iteration = 20;
     for (let k = 0; k < iteration; k++) {
@@ -107,7 +107,8 @@ class FluidGrid {
   densityStep() {
     var self = this;
     self.addDensity();
-    self.diffuse(0, self.DENSITIES, self.PREV_DENSITIES);
+    
+    self.diffuse(0, self.DENSITIES, self.PREV_DENSITIES, self.DIFFUSION);
     self.advect(0, self.DENSITIES, self.PREV_DENSITIES, self.VELOCITIES_X, self.VELOCITIES_Y);
   }
 
@@ -164,6 +165,22 @@ class FluidGrid {
     x[FlattenCords(0, N + 1)] = 0.5 * (x[FlattenCords(1, N + 1)] + x[FlattenCords(0, N)]);
     x[FlattenCords(N + 1, 0)] = 0.5 * (x[FlattenCords(N, 0)] + x[FlattenCords(N + 1, 1)]);
     x[FlattenCords(N + 1, N + 1)] = 0.5 * (x[FlattenCords(N, N + 1)] + x[FlattenCords(N + 1, N)]);
+  }
+
+  // compute velocities for each timestamp
+  velocityStep() {
+    var self = this;
+    self.addVelocities();
+    
+    self.diffuse(1, self.VELOCITIES_X, self.PREV_VELOCITIES_X, self.VISCOSITY);
+    self.diffuse(2, self.VELOCITIES_Y, self.PREV_VELOCITIES_Y, self.VISCOSITY);
+    
+    self.project(self.VELOCITIES_X, self.VELOCITIES_Y, self.PREV_VELOCITIES_X, self.PREV_VELOCITIES_Y);
+
+    self.advect(1, self.VELOCITIES_X, self.PREV_VELOCITIES_X, self.PREV_VELOCITIES_X, self.PREV_VELOCITIES_Y);
+    self.advect(2, self.VELOCITIES_Y, self.PREV_VELOCITIES_Y, self.PREV_VELOCITIES_X, self.PREV_VELOCITIES_Y);
+
+    self.project(self.VELOCITIES_X, self.VELOCITIES_Y, self.PREV_VELOCITIES_X, self.PREV_VELOCITIES_Y);
   }
 }
 
