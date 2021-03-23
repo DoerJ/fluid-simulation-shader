@@ -1,4 +1,4 @@
-var N = 500;
+var N;
 
 // this function flatten 2-D coordinates for the efficiency purpose 
 var FlattenCords = (x, y) => {
@@ -6,11 +6,11 @@ var FlattenCords = (x, y) => {
 }
 
 class FluidGrid {
-  constructor(dt, diffusion, viscosity) {
+  constructor(dt, diffusion, viscosity, dimension) {
     var self = this;
     var size = (N + 2) * (N + 2);
 
-    self.SIZE = N;
+    N = dimension;
     // the densities of fluid grid cells 
     self.DENSITIES = new Array(size * size).fill(0);
     self.PREV_DENSITIES = new Array(size * size).fill(0);
@@ -183,6 +183,8 @@ class FluidGrid {
     self.project(self.VELOCITIES_X, self.VELOCITIES_Y, self.PREV_VELOCITIES_X, self.PREV_VELOCITIES_Y);
   }
 }
+
+export { FlattenCords, FluidGrid };
 
 
 
